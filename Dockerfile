@@ -10,7 +10,7 @@ RUN apk add --no-cache \
     python \
     npm \
     && mkdir -p /root/atlas-bin \
-    && for i in /tmp/apache-atlas-*.tar.gz; do tar -zxvf $i --strip-components 1 -C /root/atlas-bin ;done \
+    && for i in /tmp/apache-atlas-*.tar.gz; do tar -zxf $i --strip-components 1 -C /root/atlas-bin ;done \
     && mkdir /root/atlas-bin/logs \
     && rm /tmp/apache-atlas-*.tar.gz
 
