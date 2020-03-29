@@ -2051,6 +2051,8 @@
                         <exclude>**/*rebel*.xml</exclude>
                         <exclude>**/*rebel*.xml.bak</exclude>
                         <exclude>**/test/resources/**</exclude>
+                        <!-- for github actions -->
+                        <exclude>.github/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>
