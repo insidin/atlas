@@ -2053,6 +2053,7 @@
                         <exclude>**/test/resources/**</exclude>
                         <!-- for github actions -->
                         <exclude>.github/**</exclude>
+                        <exclude>Dockerfile</exclude>
                     </excludes>
                 </configuration>
                 <executions>
