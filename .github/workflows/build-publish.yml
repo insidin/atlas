@@ -17,8 +17,17 @@ jobs:
         java-version: 1.8
     - name: Build with Maven
       run: mvn -B -DskipTests package -Pdist -f pom.xml
+    - name: Create artifact folder
+      run: mkdir -p /target/distro && cp /distro/target/*bin.tar.gz /target/distro
+    - uses: actions/upload-artifact@v1
+      with:
+        name: Atlas-2.0.0
+        path: /target/distro
   docker:
-    - name: Docker build-push
+    runs-on: ubuntu-latest
+    steps:
+    - name: Docker build push
+      needs: build
       uses: docker/build-push-action@v1
       with:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
