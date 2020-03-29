@@ -25,9 +25,9 @@ jobs:
         path: /target/distro
   docker:
     runs-on: ubuntu-latest
+    needs: build
     steps:
     - name: Docker build push
-      needs: build
       uses: docker/build-push-action@v1
       with:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
