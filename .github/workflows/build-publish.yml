@@ -18,7 +18,7 @@ jobs:
     - name: Build with Maven
       run: mvn -B -DskipTests package -Pdist -f pom.xml
     - name: Create artifact folder
-      run: mkdir -p target/distro && cp distro/target/*bin.tar.gz target/distro
+      run: mkdir -p target/distro && cp distro/target/*-server.tar.gz distro/target/*-hook.tar.gz target/distro
     - name: Upload artifcats
       uses: actions/upload-artifact@v1
       with:
