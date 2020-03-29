@@ -22,14 +22,14 @@ jobs:
     - name: Upload artifcats
       uses: actions/upload-artifact@v1
       with:
-        name: Atlas-2.0.0
+        name: apache-atlas-2.0.0
         path: target/distro
     - name: Docker build & push
       uses: docker/build-push-action@v1
       with:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-        repository: insidin/atlas
+        repository: insidin/apache-atlas
         tags: latest,2.0.0
         tag_with_ref: true
         tag_with_sha: true
