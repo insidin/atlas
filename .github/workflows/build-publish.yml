@@ -1,0 +1,35 @@
+name: Build & publish Docker container
+on:
+  push:
+    branches:
+      - release-3.0.0-fix
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v2
+      with:
+        ref: 'release-3.0.0-fix'
+    - name: Setup Java8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Build with Maven
+      run: mvn -B package -Pdist -f pom.xml
+    - name: Create artifact folder
+      run: mkdir -p target/distro && cp distro/target/*-server.tar.gz distro/target/*-hook.tar.gz target/distro
+    - name: Upload artifcats
+      uses: actions/upload-artifact@v1
+      with:
+        name: apache-atlas-3.0.0-snapshot
+        path: target/distro
+    - name: Docker build & push
+      uses: docker/build-push-action@v1
+      with:
+        username: ${{ secrets.DOCKER_HUB_USERNAME }}
+        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+        repository: insidin/apache-atlas
+        tags: 3.0.0-snapshot
+        tag_with_ref: true
+        tag_with_sha: true

@@ -2100,7 +2100,10 @@
                         <!-- atlas doc directory -->
                         <exclude>**/docz-lib/**</exclude>
                         <exclude>**/.docz/**</exclude>
-                        
+
+                        <!-- github actions docker build -->
+                        <exclude>.github/**</exclude>
+                        <exclude>Dockerfile</exclude>
                     </excludes>
                 </configuration>
                 <executions>
