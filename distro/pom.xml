@@ -157,6 +157,7 @@ atlas.graph.index.search.solr.wait-searcher=true
             </activation>
             <properties>
                 <graph.storage.backend>berkeleyje</graph.storage.backend>
+                <!--suppress UnresolvedMavenProperty -->
                 <graph.storage.properties>#Berkeley
 atlas.graph.storage.directory=${sys:atlas.home}/data/berkeley
 atlas.graph.storage.lock.clean-expired=true
@@ -321,6 +322,7 @@ atlas.graph.index.search.solr.wait-searcher=true
             <properties>
                 <graph.storage.backend>embeddedcassandra</graph.storage.backend>
                 <entity.repository.properties>atlas.EntityAuditRepository.impl=org.apache.atlas.repository.audit.CassandraBasedAuditRepository</entity.repository.properties>
+                <!--suppress UnresolvedMavenProperty -->
                 <graph.storage.properties>#Cassandra
 atlas.graph.storage.conf-file=${sys:atlas.home}/conf/cassandra.yml
                 </graph.storage.properties>
