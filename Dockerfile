@@ -20,4 +20,3 @@ ENV PATH=$PATH:/root/atlas-bin/bin
 ENV ATLAS_HOME=/root/atlas-bin
 
 CMD ["/bin/bash", "-c", "$ATLAS_HOME/bin/atlas_start.py; tail -fF $ATLAS_HOME/logs/application.log"]
-© 2020 GitHu
