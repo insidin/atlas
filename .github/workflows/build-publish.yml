@@ -30,6 +30,6 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
         repository: insidin/apache-atlas
-        tags: 3.0.0-snapshot
+        tags: 3.0.0-light-snapshot
         tag_with_ref: true
-        tag_with_sha: true
+        tag_with_sha: false
