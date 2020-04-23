@@ -29,6 +29,7 @@ import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -78,7 +79,7 @@ public class ActiveInstanceElectorService implements Service, LeaderLatchListene
     @Inject
     ActiveInstanceElectorService(Configuration configuration,
                                  Set<ActiveStateChangeHandler> activeStateChangeHandlerProviders,
-                                 CuratorFactory curatorFactory, ActiveInstanceState activeInstanceState,
+                                 @Lazy CuratorFactory curatorFactory, @Lazy ActiveInstanceState activeInstanceState,
                                  ServiceState serviceState, AtlasMetricsUtil metricsUtil) {
         this.configuration                     = configuration;
         this.activeStateChangeHandlerProviders = activeStateChangeHandlerProviders;

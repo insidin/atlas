@@ -34,6 +34,7 @@ import org.apache.zookeeper.data.Id;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -50,6 +51,7 @@ import java.util.List;
  * provide for safety across multiple processes.
  */
 @Component
+@Lazy
 public class ActiveInstanceState {
 
     private final Configuration configuration;
