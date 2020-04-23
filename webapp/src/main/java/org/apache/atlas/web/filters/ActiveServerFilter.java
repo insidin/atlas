@@ -18,10 +18,13 @@
 
 package org.apache.atlas.web.filters;
 
+import org.apache.atlas.ha.HAConfiguration;
 import org.apache.atlas.web.service.ActiveInstanceState;
 import org.apache.atlas.web.service.ServiceState;
+import org.apache.commons.configuration.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriUtils;
 
@@ -52,11 +55,13 @@ public class ActiveServerFilter implements Filter {
     private static final Logger LOG = LoggerFactory.getLogger(ActiveServerFilter.class);
     private static final String MIGRATION_STATUS_STATIC_PAGE = "migration-status.html";
 
+    private final Configuration configuration;
     private final ActiveInstanceState activeInstanceState;
     private ServiceState serviceState;
 
     @Inject
-    public ActiveServerFilter(ActiveInstanceState activeInstanceState, ServiceState serviceState) {
+    public ActiveServerFilter(Configuration configuration, @Lazy ActiveInstanceState activeInstanceState, ServiceState serviceState) {
+        this.configuration = configuration;
         this.activeInstanceState = activeInstanceState;
         this.serviceState = serviceState;
     }
@@ -96,7 +101,7 @@ public class ActiveServerFilter implements Filter {
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
             LOG.error("Instance in migration. Service may not be ready to return a result");
             httpServletResponse.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-        } else {
+        } else if (!HAConfiguration.isHAEnabled(configuration)) {
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
             String activeServerAddress = activeInstanceState.getActiveServerAddress();
             if (activeServerAddress == null) {
@@ -106,7 +111,13 @@ public class ActiveServerFilter implements Filter {
             } else {
                 handleRedirect((HttpServletRequest) servletRequest, httpServletResponse, activeServerAddress);
             }
+        } else {
+            HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
+            LOG.error("Could not retrieve active server address as it is null. Cannot redirect request {}",
+                    ((HttpServletRequest)servletRequest).getRequestURI());
+            httpServletResponse.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
         }
+
     }
 
     final String adminUriNotFiltered[] = { "/admin/export", "/admin/import", "/admin/importfile" };
