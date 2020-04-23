@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM openjdk:8-jre-slim
 
 WORKDIR /root
 
@@ -9,6 +9,7 @@ RUN apk add --no-cache \
     su-exec \
     python \
     npm \
+    curl \
     && mkdir -p /root/atlas-bin \
     && for i in /tmp/apache-atlas-*.tar.gz; do tar -zxf $i --strip-components 1 -C /root/atlas-bin ;done \
     && mkdir /root/atlas-bin/logs \
