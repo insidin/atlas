@@ -19,11 +19,11 @@ jobs:
       run: mvn -B -DskipTests package -Pdist -f pom.xml
     - name: Create artifact folder
       run: mkdir -p target/distro && cp distro/target/*-server.tar.gz distro/target/*-hook.tar.gz target/distro
-    - name: Upload artifats
-      uses: actions/upload-artifact@v1
-      with:
-        name: apache-atlas-3.0.0-snapshot
-        path: target/distro
+#    - name: Upload artifats
+#      uses: actions/upload-artifact@v1
+#      with:
+#        name: apache-atlas-3.0.0-snapshot
+#        path: target/distro
     - name: Docker build & push
       uses: docker/build-push-action@v1
       with:
