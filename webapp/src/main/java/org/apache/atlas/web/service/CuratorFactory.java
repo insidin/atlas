@@ -35,6 +35,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.zookeeper.data.ACL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Singleton;
@@ -49,6 +50,7 @@ import java.util.List;
  */
 @Singleton
 @Component
+@Lazy
 public class CuratorFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(CuratorFactory.class);
