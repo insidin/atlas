@@ -83,6 +83,18 @@
 
         <dependency>
             <groupId>org.janusgraph</groupId>
+            <artifactId>janusgraph-inmemory</artifactId>
+            <version>${janus.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.janusgraph</groupId>
             <artifactId>janusgraph-berkeleyje</artifactId>
             <version>${janus.version}</version>
             <exclusions>
