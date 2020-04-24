@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-slim
+FROM adoptopenjdk/openjdk8:alpine-slim
 
 WORKDIR /root
 
