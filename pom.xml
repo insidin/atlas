@@ -2105,6 +2105,7 @@
                         <!-- github actions docker build -->
                         <exclude>.github/**</exclude>
                         <exclude>Dockerfile</exclude>
+                        <exclude>.dockerignore</exclude>
                     </excludes>
                 </configuration>
                 <executions>
