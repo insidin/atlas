@@ -5,18 +5,11 @@ FROM adoptopenjdk/openjdk8:alpine-slim
 	
 WORKDIR /root
 
-#COPY target/distro/ /tmp
-
 RUN apk add --no-cache \
     bash \
     su-exec \
     python \
-    npm \
-    curl 
-#    && mkdir -p /root/atlas-bin \
-#    && for i in /tmp/apache-atlas-*.tar.gz; do tar -zxf $i --strip-components 1 -C /root/atlas-bin ;done \
-#    && mkdir /root/atlas-bin/logs \
-#    && rm /tmp/apache-atlas-*.tar.gz
+    npm 
 
 COPY --from=distro /tmp/apache-* /root/atlas-bin/
 
