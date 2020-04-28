@@ -97,7 +97,7 @@ public class AtlasGraphProvider implements IAtlasGraphProvider {
         try {
             return getGraphInstance();
         } catch (Exception ex) {
-            LOG.info("Failed to obtain graph instance, retrying " + MAX_RETRY_COUNT + " times, error: " + ex);
+            LOG.info("Failed to obtain graph instance, retrying " + MAX_RETRY_COUNT + " times, error: " + ex, ex);
 
             return retry();
         }
