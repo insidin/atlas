@@ -1,19 +1,24 @@
-FROM adoptopenjdk/openjdk8:alpine-slim
+FROM scratch as distro
+ADD target/distro/*.tar.gz /tmp/
 
+FROM adoptopenjdk/openjdk8:alpine-slim
+	
 WORKDIR /root
 
-COPY target/distro/ /tmp
+#COPY target/distro/ /tmp
 
 RUN apk add --no-cache \
     bash \
     su-exec \
     python \
     npm \
-    curl \
-    && mkdir -p /root/atlas-bin \
-    && for i in /tmp/apache-atlas-*.tar.gz; do tar -zxf $i --strip-components 1 -C /root/atlas-bin ;done \
-    && mkdir /root/atlas-bin/logs \
-    && rm /tmp/apache-atlas-*.tar.gz
+    curl 
+#    && mkdir -p /root/atlas-bin \
+#    && for i in /tmp/apache-atlas-*.tar.gz; do tar -zxf $i --strip-components 1 -C /root/atlas-bin ;done \
+#    && mkdir /root/atlas-bin/logs \
+#    && rm /tmp/apache-atlas-*.tar.gz
+
+COPY --from=distro /tmp/apache-* /root/atlas-bin/
 
 EXPOSE 21000
 
