@@ -2103,6 +2103,9 @@
                         
                         <!-- docker build -->
                         <exclude>.dockerignore</exclude>
+
+                        <!-- github actions -->
+                        <exclude>.github/**</exclude>
  
                         <exclude>build-api/**</exclude>
                     </excludes>
