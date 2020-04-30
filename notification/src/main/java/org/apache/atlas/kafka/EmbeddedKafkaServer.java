@@ -26,7 +26,7 @@ import org.apache.atlas.service.Service;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.kafka.clients.producer.*;
-import org.apache.kafka.common.utils.Time;
+import org.apache.kafka.common.utils.SystemTime;
 import org.apache.zookeeper.server.NIOServerCnxnFactory;
 import org.apache.zookeeper.server.ServerCnxnFactory;
 import org.apache.zookeeper.server.ZooKeeperServer;
@@ -45,7 +45,6 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 
 @Component
@@ -139,7 +138,7 @@ public class EmbeddedKafkaServer implements Service {
         brokerConfig.setProperty("log.flush.interval.messages", String.valueOf(1));
 
         List<KafkaMetricsReporter>   metrics          = new ArrayList<>();
-        Buffer<KafkaMetricsReporter> metricsReporters = scala.collection.JavaConversions.asScalaBuffer(metrics);
+        Buffer<KafkaMetricsReporter> metricsReporters = scala.collection.JavaConverters.asScalaBuffer(metrics);
 
         kafkaServer = new KafkaServer(KafkaConfig.fromProps(brokerConfig), new SystemTime(), Option.apply(this.getClass().getName()), metricsReporters);
 
@@ -166,31 +165,4 @@ public class EmbeddedKafkaServer implements Service {
         }
     }
 
-
-    // ----- inner class : SystemTime ----------------------------------------
-    private static class SystemTime implements Time {
-        @Override
-        public long milliseconds() {
-            return System.currentTimeMillis();
-        }
-
-        @Override
-        public long nanoseconds() {
-            return System.nanoTime();
-        }
-
-        @Override
-        public long hiResClockMs() {
-            return TimeUnit.NANOSECONDS.toMillis(nanoseconds());
-        }
-
-        @Override
-        public void sleep(long arg0) {
-            try {
-                Thread.sleep(arg0);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
 }

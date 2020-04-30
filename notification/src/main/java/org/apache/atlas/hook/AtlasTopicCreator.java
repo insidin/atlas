@@ -19,24 +19,22 @@
 package org.apache.atlas.hook;
 
 import com.google.common.annotations.VisibleForTesting;
-import kafka.admin.AdminUtils;
-import kafka.admin.RackAwareMode;
-import kafka.utils.ZkUtils;
-import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.ZkConnection;
 import org.apache.atlas.ApplicationProperties;
 import org.apache.atlas.AtlasException;
 import org.apache.atlas.utils.AuthenticationUtil;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.kafka.clients.admin.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Tuple2;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 /**
  * A class to create Kafka topics used by Atlas components.
@@ -66,12 +64,12 @@ public class AtlasTopicCreator {
             if (!handleSecurity(atlasProperties)) {
                 return;
             }
-            ZkUtils zkUtils = createZkUtils(atlasProperties);
+            AdminClient adminClient = createKafkaAdminClient(atlasProperties);
             for (String topicName : topicNames) {
                 try {
                     LOG.warn("Attempting to create topic {}", topicName);
-                    if (!ifTopicExists(topicName, zkUtils)) {
-                        createTopic(atlasProperties, topicName, zkUtils);
+                    if (!ifTopicExists(topicName, adminClient)) {
+                        createTopic(atlasProperties, topicName, adminClient);
                     } else {
                         LOG.warn("Ignoring call to create topic {}, as it already exists.", topicName);
                     }
@@ -79,7 +77,7 @@ public class AtlasTopicCreator {
                     LOG.error("Failed while creating topic {}", topicName, t);
                 }
             }
-            zkUtils.close();
+            adminClient.close();
         } else {
             LOG.info("Not creating topics {} as {} is false", StringUtils.join(topicNames, ","),
                     ATLAS_NOTIFICATION_CREATE_TOPICS_KEY);
@@ -106,19 +104,40 @@ public class AtlasTopicCreator {
     }
 
     @VisibleForTesting
-    protected boolean ifTopicExists(String topicName, ZkUtils zkUtils) {
-        return AdminUtils.topicExists(zkUtils, topicName);
+    protected boolean ifTopicExists(String topicName, AdminClient adminClient) {
+        ListTopicsOptions options = new ListTopicsOptions();
+        options.listInternal(true);
+        ListTopicsResult topics = adminClient.listTopics(options);
+        try {
+            return topics.names().get().contains(topicName);
+        }
+        catch (final InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     @VisibleForTesting
-    protected void createTopic(Configuration atlasProperties, String topicName, ZkUtils zkUtils) {
+    protected void createTopic(Configuration atlasProperties, String topicName, AdminClient adminClient) {
         int numPartitions = atlasProperties.getInt("atlas.notification.hook.numthreads", 1);
         int numReplicas = atlasProperties.getInt("atlas.notification.replicas", 1);
-        AdminUtils.createTopic(zkUtils, topicName,  numPartitions, numReplicas,
-                new Properties(), RackAwareMode.Enforced$.MODULE$);
-        LOG.warn("Created topic {} with partitions {} and replicas {}", topicName, numPartitions, numReplicas);
+        NewTopic newTopic = new NewTopic(topicName, numPartitions, (short) numReplicas);
+        try {
+            CreateTopicsResult topic = adminClient.createTopics(Collections.singletonList(newTopic));
+            topic.config(topicName).get();
+            LOG.warn("Created topic {} with partitions {} and replicas {}", topicName, numPartitions, numReplicas);
+        }
+        catch (final InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
+    @VisibleForTesting
+    protected AdminClient createKafkaAdminClient(Configuration atlasProperties) {
+        Properties properties = ConfigurationConverter.getProperties(atlasProperties.subset("atlas.notification.kafka"));
+        return AdminClient.create(properties);
+    }
+
+    /*
     @VisibleForTesting
     protected ZkUtils createZkUtils(Configuration atlasProperties) {
         String zkConnect = atlasProperties.getString("atlas.kafka.zookeeper.connect");
@@ -128,6 +147,7 @@ public class AtlasTopicCreator {
                 zkConnect, sessionTimeout, connectionTimeout);
         return new ZkUtils(zkClientAndConnection._1(), zkClientAndConnection._2(), false);
     }
+    */
 
     public static void main(String[] args) throws AtlasException {
         Configuration configuration = ApplicationProperties.get();

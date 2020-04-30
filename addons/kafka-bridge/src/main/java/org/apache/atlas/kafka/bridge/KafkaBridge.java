@@ -18,11 +18,9 @@
 
 package org.apache.atlas.kafka.bridge;
 
-import kafka.utils.ZKStringSerializer$;
-import kafka.utils.ZkUtils;
-import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.ZkConnection;
 import com.google.common.annotations.VisibleForTesting;
+import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.common.security.JaasUtils;
 import org.apache.atlas.ApplicationProperties;
 import org.apache.atlas.AtlasClientV2;
@@ -48,11 +46,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 public class KafkaBridge {
@@ -74,17 +69,20 @@ public class KafkaBridge {
     private static final String TOPIC                      = "topic";
 
     private static final String FORMAT_KAKFA_TOPIC_QUALIFIED_NAME       = "%s@%s";
+
+    /*
     private static final String ZOOKEEPER_CONNECT                       = "atlas.kafka.zookeeper.connect";
     private static final String ZOOKEEPER_CONNECTION_TIMEOUT_MS         = "atlas.kafka.zookeeper.connection.timeout.ms";
     private static final String ZOOKEEPER_SESSION_TIMEOUT_MS            = "atlas.kafka.zookeeper.session.timeout.ms";
     private static final String DEFAULT_ZOOKEEPER_CONNECT               = "localhost:2181";
     private static final int    DEFAULT_ZOOKEEPER_SESSION_TIMEOUT_MS    = 10 * 1000;
     private static final int    DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT_MS = 10 * 1000;
+    */
 
-    private final List<String>  availableTopics;
+    //private final List<String>  availableTopics;
     private final String        metadataNamespace;
     private final AtlasClientV2 atlasClientV2;
-    private final ZkUtils       zkUtils;
+    private final AdminClient   adminClient;
 
 
     public static void main(String[] args) {
@@ -159,15 +157,17 @@ public class KafkaBridge {
     }
 
     public KafkaBridge(Configuration atlasConf, AtlasClientV2 atlasClientV2) throws Exception {
-        String   zookeeperConnect    = getZKConnection(atlasConf);
-        int      sessionTimeOutMs    = atlasConf.getInt(ZOOKEEPER_SESSION_TIMEOUT_MS, DEFAULT_ZOOKEEPER_SESSION_TIMEOUT_MS) ;
-        int      connectionTimeOutMs = atlasConf.getInt(ZOOKEEPER_CONNECTION_TIMEOUT_MS, DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT_MS);
-        ZkClient zkClient            = new ZkClient(zookeeperConnect, sessionTimeOutMs, connectionTimeOutMs, ZKStringSerializer$.MODULE$);
+//        String   zookeeperConnect    = getZKConnection(atlasConf);
+//        int      sessionTimeOutMs    = atlasConf.getInt(ZOOKEEPER_SESSION_TIMEOUT_MS, DEFAULT_ZOOKEEPER_SESSION_TIMEOUT_MS) ;
+//        int      connectionTimeOutMs = atlasConf.getInt(ZOOKEEPER_CONNECTION_TIMEOUT_MS, DEFAULT_ZOOKEEPER_CONNECTION_TIMEOUT_MS);
+//        ZkClient zkClient            = new ZkClient(zookeeperConnect, sessionTimeOutMs, connectionTimeOutMs, ZKStringSerializer$.MODULE$);
 
-        this.atlasClientV2     = atlasClientV2;
+        this.atlasClientV2 = atlasClientV2;
         this.metadataNamespace = getMetadataNamespace(atlasConf);
-        this.zkUtils           = new ZkUtils(zkClient, new ZkConnection(zookeeperConnect), JaasUtils.isZkSecurityEnabled());
-        this.availableTopics   = scala.collection.JavaConversions.seqAsJavaList(zkUtils.getAllTopics());
+        this.adminClient = AdminClient.create(ConfigurationConverter.getProperties(atlasConf.subset("atlas.notification.kafka")));
+
+//       this.zkUtils           = new ZkUtils(zkClient, new ZkConnection(zookeeperConnect), JaasUtils.isZkSecurityEnabled());
+//       this.availableTopics   = scala.collection.JavaConverters.AsJavaCollection(adminClient.listTopics().names().get());
     }
 
     private String getMetadataNamespace(Configuration config) {
@@ -178,8 +178,18 @@ public class KafkaBridge {
         return config.getString(CLUSTER_NAME_KEY, DEFAULT_CLUSTER_NAME);
     }
 
+    @VisibleForTesting
+    protected List<String> getTopicNames() {
+        try {
+            return new ArrayList<>(this.adminClient.listTopics().names().get());
+        }
+        catch (final InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
     public void importTopic(String topicToImport) throws Exception {
-        List<String> topics = availableTopics;
+        List<String> topics = getTopicNames();
 
         if (StringUtils.isNotEmpty(topicToImport)) {
             List<String> topics_subset = new ArrayList<>();
@@ -235,16 +245,22 @@ public class KafkaBridge {
         }
 
         String qualifiedName = getTopicQualifiedName(metadataNamespace, topic);
+        try {
+            Integer partitionCount = adminClient.describeTopics(Collections.singletonList(topic)).values().get(topic).get().partitions().size();
+            ret.setAttribute(ATTRIBUTE_QUALIFIED_NAME, qualifiedName);
+            ret.setAttribute(CLUSTERNAME, metadataNamespace);
+            ret.setAttribute(TOPIC, topic);
+            ret.setAttribute(NAME, topic);
+            ret.setAttribute(DESCRIPTION_ATTR, topic);
+            ret.setAttribute(URI, topic);
+            ret.setAttribute(PARTITION_COUNT, partitionCount);
 
-        ret.setAttribute(ATTRIBUTE_QUALIFIED_NAME, qualifiedName);
-        ret.setAttribute(CLUSTERNAME, metadataNamespace);
-        ret.setAttribute(TOPIC, topic);
-        ret.setAttribute(NAME,topic);
-        ret.setAttribute(DESCRIPTION_ATTR, topic);
-        ret.setAttribute(URI, topic);
-        ret.setAttribute(PARTITION_COUNT, (Integer) zkUtils.getTopicPartitionCount(topic).get());
+            return ret;
+        }
+        catch (final InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
 
-        return ret;
     }
 
     @VisibleForTesting
@@ -360,6 +376,7 @@ public class KafkaBridge {
         return  ret;
     }
 
+/*
     private String getZKConnection(Configuration atlasConf) {
         String ret = null;
         ret = getStringValue(atlasConf.getStringArray(ZOOKEEPER_CONNECT));
@@ -368,4 +385,5 @@ public class KafkaBridge {
         }
         return ret;
     }
+*/
 }

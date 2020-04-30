@@ -18,9 +18,9 @@
 
 package org.apache.atlas.hook;
 
-import kafka.utils.ZkUtils;
 import org.apache.atlas.AtlasConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.kafka.clients.admin.AdminClient;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
@@ -48,7 +48,7 @@ public class AtlasTopicCreatorTest {
         final boolean[] topicExistsCalled = new boolean[] {false};
         AtlasTopicCreator atlasTopicCreator = new AtlasTopicCreator() {
             @Override
-            protected boolean ifTopicExists(String topicName, ZkUtils zkUtils) {
+            protected boolean ifTopicExists(String topicName, AdminClient adminClient) {
                 topicExistsCalled[0] = true;
                 return false;
             }
@@ -63,24 +63,24 @@ public class AtlasTopicCreatorTest {
         when(configuration.getBoolean(AtlasTopicCreator.ATLAS_NOTIFICATION_CREATE_TOPICS_KEY, true)).
                 thenReturn(true);
         when(configuration.getString("atlas.authentication.method.kerberos")).thenReturn("false");
-        final ZkUtils zookeeperUtils = mock(ZkUtils.class);
+        final AdminClient adminClient = mock(AdminClient.class);
         final boolean[] topicExistsCalled = new boolean[]{false};
         final boolean[] createTopicCalled = new boolean[]{false};
 
         AtlasTopicCreator atlasTopicCreator = new AtlasTopicCreator() {
             @Override
-            protected boolean ifTopicExists(String topicName, ZkUtils zkUtils) {
+            protected boolean ifTopicExists(String topicName, AdminClient adminClient) {
                 topicExistsCalled[0] = true;
                 return true;
             }
 
             @Override
-            protected ZkUtils createZkUtils(Configuration atlasProperties) {
-                return zookeeperUtils;
+            protected AdminClient createKafkaAdminClient(Configuration atlasProperties) {
+                return adminClient;
             }
 
             @Override
-            protected void createTopic(Configuration atlasProperties, String topicName, ZkUtils zkUtils) {
+            protected void createTopic(Configuration atlasProperties, String topicName, AdminClient adminClient) {
                 createTopicCalled[0] = true;
             }
         };
@@ -95,23 +95,23 @@ public class AtlasTopicCreatorTest {
         when(configuration.getBoolean(AtlasTopicCreator.ATLAS_NOTIFICATION_CREATE_TOPICS_KEY, true)).
                 thenReturn(true);
         when(configuration.getString("atlas.authentication.method.kerberos")).thenReturn("false");
-        final ZkUtils zookeeperUtils = mock(ZkUtils.class);
+        final AdminClient adminClient = mock(AdminClient.class);
 
         final boolean[] createdTopic = new boolean[]{false};
 
         AtlasTopicCreator atlasTopicCreator = new AtlasTopicCreator() {
             @Override
-            protected boolean ifTopicExists(String topicName, ZkUtils zkUtils) {
+            protected boolean ifTopicExists(String topicName, AdminClient adminClient) {
                 return false;
             }
 
             @Override
-            protected ZkUtils createZkUtils(Configuration atlasProperties) {
-                return zookeeperUtils;
+            protected AdminClient createKafkaAdminClient(Configuration atlasProperties) {
+                return adminClient;
             }
 
             @Override
-            protected void createTopic(Configuration atlasProperties, String topicName, ZkUtils zkUtils) {
+            protected void createTopic(Configuration atlasProperties, String topicName, AdminClient adminClient) {
                 createdTopic[0] = true;
             }
         };
@@ -125,22 +125,22 @@ public class AtlasTopicCreatorTest {
         when(configuration.getBoolean(AtlasTopicCreator.ATLAS_NOTIFICATION_CREATE_TOPICS_KEY, true)).
                 thenReturn(true);
         when(configuration.getString("atlas.authentication.method.kerberos")).thenReturn("false");
-        final ZkUtils zookeeperUtils = mock(ZkUtils.class);
+        final AdminClient adminClient = mock(AdminClient.class);
         final boolean[] createTopicCalled = new boolean[]{false};
 
         AtlasTopicCreator atlasTopicCreator = new AtlasTopicCreator() {
             @Override
-            protected boolean ifTopicExists(String topicName, ZkUtils zkUtils) {
+            protected boolean ifTopicExists(String topicName, AdminClient adminClient) {
                 return false;
             }
 
             @Override
-            protected ZkUtils createZkUtils(Configuration atlasProperties) {
-                return zookeeperUtils;
+            protected AdminClient createKafkaAdminClient(Configuration atlasProperties) {
+                return adminClient;
             }
 
             @Override
-            protected void createTopic(Configuration atlasProperties, String topicName, ZkUtils zkUtils) {
+            protected void createTopic(Configuration atlasProperties, String topicName, AdminClient adminClient) {
                 createTopicCalled[0] = true;
                 throw new RuntimeException("Simulating failure during creating topic");
             }
@@ -155,7 +155,7 @@ public class AtlasTopicCreatorTest {
         when(configuration.getBoolean(AtlasTopicCreator.ATLAS_NOTIFICATION_CREATE_TOPICS_KEY, true)).
                 thenReturn(true);
         when(configuration.getString("atlas.authentication.method.kerberos")).thenReturn("false");
-        final ZkUtils zookeeperUtils = mock(ZkUtils.class);
+        final AdminClient adminClient = mock(AdminClient.class);
 
         final Map<String, Boolean> createdTopics = new HashMap<>();
         createdTopics.put(ATLAS_HOOK_TOPIC, false);
@@ -164,17 +164,17 @@ public class AtlasTopicCreatorTest {
         AtlasTopicCreator atlasTopicCreator = new AtlasTopicCreator() {
 
             @Override
-            protected boolean ifTopicExists(String topicName, ZkUtils zkUtils) {
+            protected boolean ifTopicExists(String topicName, AdminClient adminClient) {
                 return false;
             }
 
             @Override
-            protected ZkUtils createZkUtils(Configuration atlasProperties) {
-                return zookeeperUtils;
+            protected AdminClient createKafkaAdminClient(Configuration atlasProperties) {
+                return adminClient;
             }
 
             @Override
-            protected void createTopic(Configuration atlasProperties, String topicName, ZkUtils zkUtils) {
+            protected void createTopic(Configuration atlasProperties, String topicName, AdminClient adminClient) {
                 createdTopics.put(topicName, true);
             }
         };
@@ -189,7 +189,7 @@ public class AtlasTopicCreatorTest {
         when(configuration.getBoolean(AtlasTopicCreator.ATLAS_NOTIFICATION_CREATE_TOPICS_KEY, true)).
                 thenReturn(true);
         when(configuration.getString("atlas.authentication.method.kerberos")).thenReturn("false");
-        final ZkUtils zookeeperUtils = mock(ZkUtils.class);
+        final AdminClient adminClient = mock(AdminClient.class);
 
         final Map<String, Boolean> createdTopics = new HashMap<>();
         createdTopics.put(ATLAS_ENTITIES_TOPIC, false);
@@ -197,17 +197,17 @@ public class AtlasTopicCreatorTest {
         AtlasTopicCreator atlasTopicCreator = new AtlasTopicCreator() {
 
             @Override
-            protected boolean ifTopicExists(String topicName, ZkUtils zkUtils) {
+            protected boolean ifTopicExists(String topicName, AdminClient adminClient) {
                 return false;
             }
 
             @Override
-            protected ZkUtils createZkUtils(Configuration atlasProperties) {
-                return zookeeperUtils;
+            protected AdminClient createKafkaAdminClient(Configuration atlasProperties) {
+                return adminClient;
             }
 
             @Override
-            protected void createTopic(Configuration atlasProperties, String topicName, ZkUtils zkUtils) {
+            protected void createTopic(Configuration atlasProperties, String topicName, AdminClient adminClient) {
                 if (topicName.equals(ATLAS_HOOK_TOPIC)) {
                     throw new RuntimeException("Simulating failure when creating ATLAS_HOOK topic");
                 } else {
@@ -225,26 +225,26 @@ public class AtlasTopicCreatorTest {
         when(configuration.getBoolean(AtlasTopicCreator.ATLAS_NOTIFICATION_CREATE_TOPICS_KEY, true)).
                 thenReturn(true);
         when(configuration.getString("atlas.authentication.method.kerberos")).thenReturn("false");
-        final ZkUtils zookeeperUtils = mock(ZkUtils.class);
+        final AdminClient adminClient = mock(AdminClient.class);
 
         AtlasTopicCreator atlasTopicCreator = new AtlasTopicCreator() {
             @Override
-            protected boolean ifTopicExists(String topicName, ZkUtils zkUtils) {
+            protected boolean ifTopicExists(String topicName, AdminClient adminClient) {
                 return false;
             }
 
             @Override
-            protected ZkUtils createZkUtils(Configuration atlasProperties) {
-                return zookeeperUtils;
+            protected AdminClient createKafkaAdminClient(Configuration atlasProperties) {
+                return adminClient;
             }
 
             @Override
-            protected void createTopic(Configuration atlasProperties, String topicName, ZkUtils zkUtils) {
+            protected void createTopic(Configuration atlasProperties, String topicName, AdminClient adminClient) {
             }
         };
         atlasTopicCreator.createAtlasTopic(configuration, ATLAS_HOOK_TOPIC, ATLAS_ENTITIES_TOPIC);
 
-        verify(zookeeperUtils, times(1)).close();
+        verify(adminClient, times(1)).close();
     }
 
     @Test
@@ -252,24 +252,24 @@ public class AtlasTopicCreatorTest {
         Configuration configuration = mock(Configuration.class);
         when(configuration.getBoolean(AtlasTopicCreator.ATLAS_NOTIFICATION_CREATE_TOPICS_KEY, true)).
                 thenReturn(true);
-        final ZkUtils zookeeperUtils = mock(ZkUtils.class);
+        final AdminClient adminClient = mock(AdminClient.class);
         final Map<String, Boolean> createdTopics = new HashMap<>();
         createdTopics.put(ATLAS_HOOK_TOPIC, false);
         createdTopics.put(ATLAS_ENTITIES_TOPIC, false);
 
         AtlasTopicCreator atlasTopicCreator = new AtlasTopicCreator() {
             @Override
-            protected boolean ifTopicExists(String topicName, ZkUtils zkUtils) {
+            protected boolean ifTopicExists(String topicName, AdminClient adminClient) {
                 return false;
             }
 
             @Override
-            protected ZkUtils createZkUtils(Configuration atlasProperties) {
-                return zookeeperUtils;
+            protected AdminClient createKafkaAdminClient(Configuration atlasProperties) {
+                return adminClient;
             }
 
             @Override
-            protected void createTopic(Configuration atlasProperties, String topicName, ZkUtils zkUtils) {
+            protected void createTopic(Configuration atlasProperties, String topicName, AdminClient adminClient) {
                 createdTopics.put(topicName, true);
             }
 

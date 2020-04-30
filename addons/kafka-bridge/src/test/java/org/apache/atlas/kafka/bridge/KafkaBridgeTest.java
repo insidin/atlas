@@ -18,7 +18,6 @@
 
 package org.apache.atlas.kafka.bridge;
 
-import kafka.utils.ZkUtils;
 import org.I0Itec.zkclient.ZkConnection;
 import org.apache.atlas.AtlasClient;
 import org.apache.atlas.AtlasClientV2;
@@ -28,6 +27,8 @@ import org.apache.atlas.kafka.bridge.KafkaBridge;
 import org.apache.atlas.kafka.model.KafkaDataTypes;
 import org.apache.atlas.model.instance.AtlasEntity;
 import org.apache.atlas.model.instance.EntityMutationResponse;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.ListTopicsResult;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.Assert;
@@ -49,7 +50,7 @@ public class KafkaBridgeTest {
     public static final String CLUSTER_NAME = "primary";
 
     @Mock
-    private ZkClient zkClient;
+    private AdminClient adminClient;
 
     @Mock
     private ZkConnection zkConnection;
@@ -77,12 +78,10 @@ public class KafkaBridgeTest {
 
     @Test
     public void testImportTopic() throws Exception {
-
-        List<String> topics = setupTopic(zkClient, TEST_TOPIC_NAME);
-
         AtlasEntity.AtlasEntityWithExtInfo atlasEntityWithExtInfo = new AtlasEntity.AtlasEntityWithExtInfo(
                 getTopicEntityWithGuid("0dd466a4-3838-4537-8969-6abb8b9e9185"));
         KafkaBridge kafkaBridge = mock(KafkaBridge.class);
+        when(kafkaBridge.getTopicNames()).thenReturn(Collections.singletonList(TEST_TOPIC_NAME));
         when(kafkaBridge.createEntityInAtlas(atlasEntityWithExtInfo)).thenReturn(atlasEntityWithExtInfo);
 
         try {
@@ -101,14 +100,6 @@ public class KafkaBridgeTest {
                 .thenReturn((new AtlasEntity.AtlasEntityWithExtInfo(
                         getTopicEntityWithGuid("0dd466a4-3838-4537-8969-6abb8b9e9185"))));
 
-    }
-
-    private List<String> setupTopic(ZkClient zkClient, String topicName) {
-        List<String> topics = new ArrayList<>();
-        topics.add(topicName);
-        ZkUtils zkUtils = mock(ZkUtils.class);
-        when(zkUtils.getAllTopics()).thenReturn(JavaConverters.asScalaIteratorConverter(topics.iterator()).asScala().toSeq());
-        return topics;
     }
 
     private AtlasEntity getTopicEntityWithGuid(String guid) {
