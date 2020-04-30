@@ -2101,6 +2101,10 @@
                         <exclude>**/docz-lib/**</exclude>
                         <exclude>**/.docz/**</exclude>
                         
+                        <!-- docker build -->
+                        <exclude>.dockerignore</exclude>
+ 
+                        <exclude>build-api/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

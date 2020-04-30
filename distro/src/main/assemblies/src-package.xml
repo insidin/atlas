@@ -42,6 +42,7 @@
                 <exclude>**/${sys:atlas.data}/**</exclude>
                 <exclude>**/atlas.data/**</exclude>
                 <exclude>**/*.patch</exclude>
+                <exclude>build-api/**</exclude>
             </excludes>
         </fileSet>
     </fileSets>
