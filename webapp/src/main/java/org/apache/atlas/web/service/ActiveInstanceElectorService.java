@@ -18,6 +18,7 @@
 
 package org.apache.atlas.web.service;
 
+import org.apache.atlas.ApplicationProperties;
 import org.apache.atlas.AtlasException;
 import org.apache.atlas.ha.AtlasServerIdSelector;
 import org.apache.atlas.ha.HAConfiguration;
@@ -29,7 +30,11 @@ import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -53,6 +58,7 @@ import java.util.Set;
  */
 
 @Component
+@Conditional(ActiveInstanceElectorService.HAEnabled.class)
 //
 // This should be called the last, leaving it without the @Order(Integer.MAX_VALUE) will make it get
 // called after all services have their start called.
@@ -206,5 +212,20 @@ public class ActiveInstanceElectorService implements Service, LeaderLatchListene
             }
         }
         serviceState.setPassive();
+    }
+
+    static class HAEnabled implements Condition {
+
+        @Override
+        public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+            try {
+                Configuration configuration = ApplicationProperties.get();
+                return HAConfiguration.isHAEnabled(configuration);
+            }
+            catch (AtlasException e) {
+                LOG.error("Error determining if HA is enabled. Disabling HA setup.");
+            }
+            return false;
+        }
     }
 }

@@ -20,6 +20,7 @@ package org.apache.atlas.web.filters;
 
 import org.apache.atlas.web.service.ActiveInstanceState;
 import org.apache.atlas.web.service.ServiceState;
+import org.apache.commons.configuration.Configuration;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
@@ -55,6 +56,9 @@ public class ActiveServerFilterTest {
     @Mock
     private ServiceState serviceState;
 
+    @Mock
+    private Configuration configuration;
+
     @BeforeMethod
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -65,7 +69,7 @@ public class ActiveServerFilterTest {
         when(serviceState.getState()).thenReturn(ServiceState.ServiceStateValue.ACTIVE);
         when(servletRequest.getRequestURI()).thenReturn("api/atlas/types");
 
-        ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+        ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
 
         activeServerFilter.doFilter(servletRequest, servletResponse, filterChain);
 
@@ -77,7 +81,7 @@ public class ActiveServerFilterTest {
         when(serviceState.getState()).thenReturn(ServiceState.ServiceStateValue.PASSIVE);
         when(servletRequest.getRequestURI()).thenReturn("api/atlas/types");
 
-        ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+        ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
 
         when(activeInstanceState.getActiveServerAddress()).thenReturn(null);
 
@@ -91,7 +95,7 @@ public class ActiveServerFilterTest {
         when(serviceState.getState()).thenReturn(ServiceState.ServiceStateValue.PASSIVE);
         when(servletRequest.getRequestURI()).thenReturn("api/atlas/types");
 
-        ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+        ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
 
         when(activeInstanceState.getActiveServerAddress()).thenReturn(ACTIVE_SERVER_ADDRESS);
         when(servletRequest.getRequestURI()).thenReturn("types");
@@ -111,7 +115,7 @@ public class ActiveServerFilterTest {
             when(serviceState.getState()).thenReturn(ServiceState.ServiceStateValue.PASSIVE);
             when(servletRequest.getRequestURI()).thenReturn(partialUrl);
 
-            ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+            ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
 
             when(activeInstanceState.getActiveServerAddress()).thenReturn(ACTIVE_SERVER_ADDRESS);
             when(servletRequest.getRequestURI()).thenReturn(partialUrl);
@@ -128,7 +132,7 @@ public class ActiveServerFilterTest {
         when(serviceState.getState()).thenReturn(ServiceState.ServiceStateValue.PASSIVE);
         when(servletRequest.getRequestURI()).thenReturn("api/atlas/types");
 
-        ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+        ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
 
         when(activeInstanceState.getActiveServerAddress()).thenReturn(ACTIVE_SERVER_ADDRESS);
         when(servletRequest.getMethod()).thenReturn(HttpMethod.GET);
@@ -145,7 +149,7 @@ public class ActiveServerFilterTest {
     public void testRedirectedRequestShouldContainEncodeQueryParameters() throws IOException, ServletException {
         when(serviceState.getState()).thenReturn(ServiceState.ServiceStateValue.PASSIVE);
 
-        ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+        ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
 
         when(activeInstanceState.getActiveServerAddress()).thenReturn(ACTIVE_SERVER_ADDRESS);
         when(servletRequest.getMethod()).thenReturn(HttpMethod.GET);
@@ -165,7 +169,7 @@ public class ActiveServerFilterTest {
         when(serviceState.getState()).thenReturn(ServiceState.ServiceStateValue.PASSIVE);
         when(servletRequest.getRequestURI()).thenReturn("api/atlas/types");
 
-        ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+        ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
 
         when(activeInstanceState.getActiveServerAddress()).thenReturn(ACTIVE_SERVER_ADDRESS);
         when(servletRequest.getMethod()).thenReturn(HttpMethod.POST);
@@ -182,7 +186,7 @@ public class ActiveServerFilterTest {
         when(serviceState.getState()).thenReturn(ServiceState.ServiceStateValue.PASSIVE);
         when(servletRequest.getRequestURI()).thenReturn("api/atlas/types");
 
-        ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+        ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
 
         when(activeInstanceState.getActiveServerAddress()).thenReturn(ACTIVE_SERVER_ADDRESS);
         when(servletRequest.getMethod()).thenReturn(HttpMethod.PUT);
@@ -199,7 +203,7 @@ public class ActiveServerFilterTest {
         when(serviceState.getState()).thenReturn(ServiceState.ServiceStateValue.PASSIVE);
         when(servletRequest.getRequestURI()).thenReturn("api/atlas/types");
 
-        ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+        ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
 
         when(activeInstanceState.getActiveServerAddress()).thenReturn(ACTIVE_SERVER_ADDRESS);
         when(servletRequest.getMethod()).thenReturn(HttpMethod.DELETE);
@@ -218,7 +222,7 @@ public class ActiveServerFilterTest {
         when(serviceState.getState()).thenReturn(ServiceState.ServiceStateValue.BECOMING_ACTIVE);
         when(servletRequest.getRequestURI()).thenReturn("api/atlas/types");
 
-        ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+        ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
 
         activeServerFilter.doFilter(servletRequest, servletResponse, filterChain);
 
@@ -232,7 +236,7 @@ public class ActiveServerFilterTest {
         when(servletRequest.getRequestURI()).
                 thenReturn("api/atlas/admin/asmasn"); // any Admin URI is fine.
 
-        ActiveServerFilter activeServerFilter = new ActiveServerFilter(activeInstanceState, serviceState);
+        ActiveServerFilter activeServerFilter = new ActiveServerFilter(configuration, activeInstanceState, serviceState);
         activeServerFilter.doFilter(servletRequest, servletResponse, filterChain);
 
         verify(filterChain).doFilter(servletRequest, servletResponse);
