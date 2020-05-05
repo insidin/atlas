@@ -177,6 +177,11 @@
             <version>${janus.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.janusgraph</groupId>
+            <artifactId>janusgraph-inmemory</artifactId>
+            <version>${janus.version}</version>
+        </dependency>
         <!-- JanusGraph 0.2.0 is dependent on solr-solrj 7.0.0 -->
         <dependency>
             <groupId>org.apache.solr</groupId>
